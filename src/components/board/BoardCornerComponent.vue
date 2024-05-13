@@ -11,9 +11,9 @@ const props = defineProps({
 </script>
 
 <template>
-<BoardSpaceComponent :class="props.data.class">
-    <slot></slot>
-</BoardSpaceComponent>
+    <BoardSpaceComponent :class="props.data.class">
+        <slot></slot>
+    </BoardSpaceComponent>
 </template>
 
 <style scoped>
@@ -21,4 +21,7 @@ const props = defineProps({
     display: block;
 }
 
+.corner {
+    overflow: hidden;
+}
 </style>
