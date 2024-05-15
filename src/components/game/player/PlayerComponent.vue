@@ -17,9 +17,9 @@ watch(() => props.message, nv => {
     try {
         const data = JSON.parse(nv.trim());
         if (data['func'] === 'moveTo') {
-            player.moveToSpace(data['data']);
+            player.moveToSpace(Number(data['data']));
         } else if (data['func'] === 'buy') {
-            player.buy(data['data']);
+            player.buy(Number(data['data']));
         }
     } catch(e) {
         console.error(e);
