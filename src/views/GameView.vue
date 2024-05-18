@@ -1,102 +1,59 @@
 <script setup lang="ts">
-import BoardCenterComponent from '@/components/game/board/BoardCenterComponent.vue';
-import BoardCornerComponent from '@/components/game/board/space/corner/BoardCornerComponent.vue';
-import BoardRowComponent from '@/components/game/board/BoardRowComponent.vue';
-import DebugSocketComponent from '@/components/debug/DebugSocketComponent.vue';
-import { useThreeStore } from '@/stores/threeStore';
-import { computed, watch } from 'vue';
-import { ref } from 'vue';
-import PlayerComponent from '@/components/game/player/PlayerComponent.vue';
-import { useGameStore } from '@/stores/gameStore';
-import SockJS from 'sockjs-client/dist/sockjs.js';
-import { useSkybox } from '@/scripts/skybox';
+import { GameClient } from '@/scripts/stomp';
+import { loadCubeTexture } from '@/scripts/threeUtil';
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/Addons.js';
+import { onMounted } from 'vue';
 
-const canvas = ref(null as unknown as HTMLCanvasElement);
-useSkybox('src/assets/cubemap/christmas');
+const path: string = 'src/assets/cubemap/christmas';
 
-watch(canvas, (cur) => {
-    if (!cur) return;
+onMounted(() => {
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.domElement.style.position = 'fixed';
+    renderer.domElement.style.zIndex = '1';
+    document.body.appendChild(renderer.domElement);
 
-    const threeStore = useThreeStore();
-    threeStore.initThreeJs(canvas.value, 50);
-    // threeStore.useOribitController();
-    console.log(threeStore.$state);
-});
+    // Cube texture loader를 사용하여 skybox 생성
+    const texture = loadCubeTexture(path);
+    scene.background = texture;
 
-const gameStore = useGameStore();
-const rowBottom = computed(() => {
-    return gameStore.spaceData.slice(1, 10).reverse();
-});
-const rowLeft = computed(() => {
-    return gameStore.spaceData.slice(11, 20).reverse();;
-});
-const rowTop = computed(() => {
-    return gameStore.spaceData.slice(21, 30);
-});
-const rowRight = computed(() => {
-    return gameStore.spaceData.slice(31, 40);
-});
+    // camera 위치 설정
+    camera.position.z = 30;
+    new OrbitControls(camera, renderer.domElement);
 
-const socket = new SockJS('http://localhost:8080/ws'); // 웹소켓 엔드포인트 주소 입력
-const connected = ref(false);
-const message = ref('');
+    //회전 설정
+    let rotationSpeedY = 0.0002; // -0.01에서 0.01 사이의 값
 
-// // 연결 이벤트 핸들러
-socket.onopen = () => {
-    console.log('WebSocket connected');
-    connected.value = true;
-};
+    // setInterval(() => {
+    //     rotationSpeedY = Math.random() * 0.0008;
+    // }, 5000);
 
-// // 메시지 수신 이벤트 핸들러
-socket.onmessage = (event) => {
-    message.value = event.data;
-};
+    // 렌더링 루프
+    const animate = () => {
+        requestAnimationFrame(animate);
+        camera.rotation.y += rotationSpeedY;
+        renderer.render(scene, camera);
+    }
+    animate();
 
-// // 연결 종료 이벤트 핸들러
-socket.onclose = () => {
-    console.log('WebSocket disconnected');
-    connected.value = false;
-    gameStore.reset();
-};
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+})
+const stomp = new GameClient();
 </script>
 
 <template>
-    <div class="board">
-        <canvas id="threeCanvas" ref="canvas"></canvas>
-        <BoardCenterComponent />
-
-        <!-- 하 -->
-        <BoardCornerComponent :data="gameStore.spaceData[0]" :index="0"/>
-        <BoardRowComponent :class="{ 'horizontal-row': true, 'bottom-row': true }" :space-data-list="rowBottom" :start-index="1" :reversed="true"/>
-        <!-- 좌 -->
-        <BoardCornerComponent :data="gameStore.spaceData[10]" :index="10"/>
-        <BoardRowComponent :class="{ 'vertical-row': true, 'left-row': true }" :space-data-list="rowLeft" :start-index="11" :reversed="true"/>
-        <!-- 상 -->
-        <BoardCornerComponent :data="gameStore.spaceData[20]" :index="20"/>
-        <BoardRowComponent :class="{ 'horizontal-row': true, 'top-row': true }" :space-data-list="rowTop" :start-index="21"/>
-        <!-- 우 -->
-        <BoardCornerComponent :data="gameStore.spaceData[30]" :index="30"/>
-        <BoardRowComponent :class="{ 'vertical-row': true, 'right-row': true }" :space-data-list="rowRight" :start-index="31"/>
-        
-        <PlayerComponent :message="message" :connected="connected"/>
-    </div>
-    <DebugSocketComponent :message="message" :connected="connected" />
+    <RouterView :game-client="stomp" />
+    <!-- <DebugSocketComponent :message="message" :connected="connected" /> -->
 </template>
 
-<style scoped>
-.board {
-    position: relative;
-    z-index: 2;
-}
-canvas {
-    top: calc(-5%);
-    position:absolute;
-    width: 100%;
-    height: calc(110%);
-    z-index: 100000;
-    pointer-events: none;
-}
-</style>
+<style scoped></style>
 
 <style>
 .instruction {

@@ -1,4 +1,4 @@
-import { Camera, Group, Object3D, Vector3, type Object3DEventMap, type Renderer } from "three";
+import { Camera, CubeTextureLoader, Group, Object3D, Vector3, type Object3DEventMap, type Renderer } from "three";
 import { FBXLoader, GLTFLoader, type GLTF } from "three/examples/jsm/Addons.js";
 import * as TWEEN from '@tweenjs/tween.js';
 
@@ -40,6 +40,19 @@ export const loadFbx = (url:string) => {
     });
 
     return promise;
+}
+
+export const loadCubeTexture = (path:string) => {
+  const loader = new CubeTextureLoader();
+  const texture = loader.load([
+      `${path}/px.png`, // right
+      `${path}/nx.png`, // left
+      `${path}/py.png`, // top
+      `${path}/ny.png`, // bottom
+      `${path}/pz.png`, // back
+      `${path}/nz.png`  // front
+  ]);
+  return texture;
 }
 
 export const moveTo = (obj:Object3D, pos:Vector3, t=1000) => {

@@ -32,7 +32,7 @@ export const useThreeStore = defineStore('three', () => {
     if (canvas) {
       const canvasBounds = canvas?.getBoundingClientRect();
       width = canvasBounds.width;
-      height = canvasBounds.height;
+      height = canvasBounds.height * 1.2;
     } else {
       width = window.innerWidth;
       height = window.innerHeight;
@@ -86,6 +86,10 @@ export const useThreeStore = defineStore('three', () => {
     doAnimate();
   }
 
+  const createMixer = (rootObj:Object3D) => {
+    return new AnimationMixer(rootObj);
+  }
+
   const useOribitController = () => {
     new OrbitControls(three.camera, three.renderer.domElement);
   }
@@ -108,5 +112,5 @@ export const useThreeStore = defineStore('three', () => {
     });
   }
 
-  return { three, listenThreeReadyEvent, checkThreeReady, initThreeJs, loadFbx: loadFbxToScene, animate, getPositionCenterOfElem, addToScene, render, useOribitController, loadGltf: loadGltfToScene };
+  return { three, createMixer, listenThreeReadyEvent, checkThreeReady, initThreeJs, loadFbx: loadFbxToScene, animate, getPositionCenterOfElem, addToScene, render, useOribitController, loadGltf: loadGltfToScene };
 })

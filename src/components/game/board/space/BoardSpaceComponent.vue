@@ -17,6 +17,7 @@ const props = defineProps({
 const dialog = ref(false);
 
 const threeStore = useThreeStore();
+const gameStore = useGameStore();
 const threeReady = computed(() => threeStore.checkThreeReady);
 watch(threeReady, () => {
     const pos = threeStore.getPositionCenterOfElem(targetElement.value);
@@ -42,7 +43,8 @@ const onClick = () => {
         <v-card-text>
           Type: {{ data.type }}<br>
           Price: {{ data.price || 'N/A' }}<br>
-          Instruction: {{ data.instruction || 'N/A' }}
+          Instruction: {{ data.instruction || 'N/A' }}<br>
+          Owner: {{ gameStore.findOwner(props.index)?.getName() }}
         </v-card-text>
         <v-card-actions>
           <v-btn color="blue darken-1" @click="dialog = false">Close</v-btn>

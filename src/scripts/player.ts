@@ -1,59 +1,75 @@
 import { moveTo } from '@/scripts/threeUtil';
 import { useGameStore } from '@/stores/gameStore';
 import { useThreeStore } from '@/stores/threeStore';
-import type { Object3D } from 'three';
-import { computed, watch } from 'vue';
+import { AnimationMixer, type Object3D } from 'three';
+import { computed, ref, watch, type Ref } from 'vue';
 
 export class Player {
-    gameStore;
-    threeStore;
-    obj:Object3D = null as unknown as Object3D;
-    currentSpaceIndex:number;
-    money:number;
+    private gameStore;
+    private threeStore;
+    private obj:                Object3D = undefined as unknown as Object3D;
+    private currentSpaceIndex:  Ref<number>;
+    private money:              Ref<number>;
+    private name:               string;
+    private ownBuildings:       Ref<Set<number>>;
 
-    constructor() {
+    constructor(name:string, spaceIndex:Ref<number>, money:Ref<number>) {
         this.threeStore = useThreeStore();
         this.gameStore = useGameStore();
-        this.currentSpaceIndex = 0;
-        this.money = 10000000;
-        console.log(this.gameStore.positionData)
+        this.currentSpaceIndex = spaceIndex;
+        this.money = money;
+        this.name = name;
+        this.ownBuildings = ref(new Set<number>());
     }
 
     init = () => {
         const gameReady = computed(() => useGameStore().gameReady);
         return new Promise<Player>((resolve, reject) => {
-            watch(gameReady, async () => {
-                const fbx = await this.threeStore.loadFbx('src/assets/Happy Idle.fbx', this.gameStore.getPositionAt(this.currentSpaceIndex), 0.015)
-                    .catch(() => null);
-                if (!fbx) {
-                    reject(this);
-                    return;
-                }
-    
+            const onGameReady = async () => {
+                const fbx = await this.threeStore.loadFbx(
+                    '/player.fbx',
+                    this.gameStore.getPositionAt(this.currentSpaceIndex.value),
+                    0.015
+                ).catch((e) => reject(e));
+                
+                if (!fbx) return;
+
                 this.obj = fbx;
-                const action = this.threeStore.three.mixer.clipAction(fbx.animations[0]);
-                action.timeScale = 0.3;
+                const mixer = this.threeStore.createMixer(this.obj);
+                const action = mixer.clipAction(fbx.animations[0]);
                 action.play();
+                action.timeScale = 0.3;
             
-                const animate = () => {
-                    requestAnimationFrame(animate);
-                    fbx.lookAt(this.threeStore.three.camera.position);
-                    if (this.threeStore.three.mixer) {
-                        this.threeStore.three.mixer.update(0.01); // 0.01은 프레임 간의 시간 간격입니다. 필요에 따라 조절할 수 있습니다.
-                    }
-                }
-                animate();
+                this.requestAnimate(fbx, mixer);
+
+                watch(this.currentSpaceIndex, (nv, ov) => {
+                    this.moveToSpace(ov, nv);
+                });
+
+                this.gameStore.addPlayer(this);
                 resolve(this);
-            });
-        })
+            }
+            watch(gameReady, onGameReady);
+        });
     }
 
-    moveToSpace = async (spaceIndex:number, t=300) => {
+    private requestAnimate = (obj:Object3D, mixer?:AnimationMixer) => {
+        const animate = () => {
+            requestAnimationFrame(animate);
+            obj.lookAt(this.threeStore.three.camera.position);
+            if (mixer) {
+                mixer.update(0.01); // 0.01은 프레임 간의 시간 간격입니다. 필요에 따라 조절할 수 있습니다.
+            }
+        }
+        animate();
+    }
+
+    private moveToSpace = async (from:number, to:number, t=300) => {
         if (!this.obj) return;
-        while (this.currentSpaceIndex !== spaceIndex) {
-        const nextSpaceIndex = (this.currentSpaceIndex+1) % this.gameStore.spaceData.length;
+        while (from !== to) {
+            const nextSpaceIndex = (from+1) % this.gameStore.spaceData.length;
             await moveTo(this.obj, this.gameStore.getPositionAt(nextSpaceIndex), t);
-            this.currentSpaceIndex = nextSpaceIndex;
+            from = nextSpaceIndex;
         }
     }
 
@@ -66,11 +82,18 @@ export class Player {
         const spaceData = this.gameStore.spaceData[spaceIndex];
         const price = Number(spaceData.price) || 100;
 
-        if (this.money >= price) {
-            this.money -= price;
-            alert(`구매 완료\n현재 잔액: ${this.money}`);
+        if (this.money.value >= price) {
+            this.money.value -= price;
+            this.ownBuildings.value.add(spaceIndex);
+            console.log(`구매 완료\n현재 잔액: ${this.money.value}`);
         } else {
             alert('잔액 부족');
         }
     }
+
+    checkOwnBuilding = (spaceIndex:number) => {
+        return this.ownBuildings.value.has(spaceIndex);
+    }
+
+    getName = () => this.name;
 }
