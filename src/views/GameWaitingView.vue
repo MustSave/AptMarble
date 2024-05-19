@@ -89,5 +89,6 @@ const props = defineProps({
 .match-making {
     z-index: 2;
     min-width: 600px;
+    margin: auto;
 }
 </style>

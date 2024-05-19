@@ -31,7 +31,7 @@ const moneyStyle = ref({
 
 const player = new Player(name, spaceIndex, money);
 player.init().then(() => spaceIndex.value = 10)
-setTimeout(() => player.buy(1), 1000);
+setTimeout(() => player.buy(1), 5000);
 const animateMoneyChange = (newMoney: number) => {
   isAnimating.value = true;
 
@@ -104,6 +104,7 @@ onMounted(() => {
   min-height: 100px;
   position: relative;
   pointer-events: none;
+  z-index: 4;
 }
 
 .fixed {
@@ -111,12 +112,12 @@ onMounted(() => {
 }
 
 .top-left {
-  top: 10px;
+  top: 80px;
   left: 10px;
 }
 
 .top-right {
-  top: 10px;
+  top: 80px;
   right: 10px;
 }
 

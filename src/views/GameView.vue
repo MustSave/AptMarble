@@ -44,7 +44,7 @@ onMounted(() => {
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
     });
-})
+});
 const stomp = new GameClient();
 </script>
 

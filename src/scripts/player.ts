@@ -29,7 +29,7 @@ export class Player {
                 const fbx = await this.threeStore.loadFbx(
                     '/player.fbx',
                     this.gameStore.getPositionAt(this.currentSpaceIndex.value),
-                    0.015
+                    0.01
                 ).catch((e) => reject(e));
                 
                 if (!fbx) return;

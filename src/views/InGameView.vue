@@ -63,7 +63,8 @@ const rowRight = computed(() => {
 
 <style scoped>
 .board {
-    margin-top: 30px;
+    /* margin-top: 100px; */
+    margin: auto;
     z-index: 2;
     height: fit-content;
 }

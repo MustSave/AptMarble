@@ -1,9 +1,13 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router';
+import { RouterView } from 'vue-router';
+import HeaderComponent from '@/components/header/HeaderComponent.vue';
 </script>
 
 <template>
-  <RouterView />
+  <v-app style="background: none;">
+    <HeaderComponent />
+    <RouterView />
+  </v-app>
 </template>
 
 <style scoped>
