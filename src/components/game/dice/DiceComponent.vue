@@ -1,16 +1,11 @@
 <script setup>
+import { useGameStore } from '@/stores/gameStore';
 import DiceBox from '@3d-dice/dice-box-threejs';
 import { computed, onMounted, watch } from 'vue';
 
-const props = defineProps({
-    diceResult: {
-        type: Array,
-        default: [],
-    }
-});
+const gameStore = useGameStore();
 
-const diceResult = computed(() => props.diceResult);
-
+const diceResult = computed(() => gameStore.diceResult);
 onMounted(() => {
     const Box = new DiceBox('#dice-container', {
         light_intensity: 1,

@@ -7,13 +7,11 @@ const coordinate = {
   lng: 126.9786567
 };
 
-const diceResult = ref<number[]>([1, 1]);
-setTimeout(() => {diceResult.value = [4, 6]}, 1000);
 </script>
 
 <template>
 <div class="center">
-    <DiceComponent :dice-result="diceResult"/>
+    <DiceComponent />
     <KakaoMap :lat="coordinate.lat" :lng="coordinate.lng" style="grid-column: 1/12;grid-row: 1/12;" :width="'100%'" :height="'100%'"/>
 </div>
 </template>

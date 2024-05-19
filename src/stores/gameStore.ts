@@ -8,11 +8,16 @@ const ZERO = new Vector3();
 export const useGameStore = defineStore('gameStore', () => {
     const spaceData = ref(tmpData);
     const gameReady = ref(false);
+    const diceResult = ref<number[]>([1, 1]);
     let players:Player[] = [];
 
     let positionData = computed(() => {
         return new Array<Vector3>(spaceData.value.length);
     });
+
+    const setDiceResult = (...nums:number[]) => {
+        diceResult.value = nums;
+    }
 
     const setPositionAt = (index:number, position:Vector3) => {
         positionData.value[index] = position;
@@ -45,5 +50,9 @@ export const useGameStore = defineStore('gameStore', () => {
         return undefined;
     }
 
-    return { spaceData, positionData, findOwner, addPlayer, setPositionAt, getPositionAt, gameReady, reset };
+    setTimeout(() => {
+        setDiceResult(4, 6);
+    }, 1000);
+
+    return { spaceData, positionData, diceResult, setDiceResult, findOwner, addPlayer, setPositionAt, getPositionAt, gameReady, reset };
 });
